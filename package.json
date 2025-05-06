@@ -1,0 +1,24 @@
+{
+  "name": "accounts-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brandon-relentnet/simple-account-auth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/brandon-relentnet/simple-account-auth/issues"
+  },
+  "homepage": "https://github.com/brandon-relentnet/simple-account-auth#readme",
+  "dependencies": {
+    "colors": "^1.4.0"
+  }
+}
