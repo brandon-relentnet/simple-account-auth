@@ -3,12 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,7 +17,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = await login(email, password);
+      const result = await authLogin(login, password);
       if (result.success) {
         navigate("/dashboard");
       } else {
@@ -39,14 +39,14 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="email">
-              Email
+            <label className="block text-gray-700 mb-2" htmlFor="login">
+              Email or Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="login"
+              type="text"
+              value={login}
+              onChange={(e) => setLogin(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             />
@@ -73,6 +73,15 @@ const Login = () => {
           >
             {isLoading ? "Logging in..." : "Log In"}
           </button>
+
+          <div className="mt-4 text-center">
+            <Link
+              to="/forgot-password"
+              className="text-blue-500 hover:text-blue-700 text-sm"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
 
         <p className="mt-4 text-center">

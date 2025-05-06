@@ -5,6 +5,8 @@ import { useAuth } from "../context/AuthContext";
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,6 +19,23 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
+    // Validate username
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return setError(
+        "Username must contain only letters, numbers, and underscores"
+      );
+    }
+
+    // Validate phone number (if provided)
+    if (
+      phoneNumber &&
+      !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(
+        phoneNumber
+      )
+    ) {
+      return setError("Invalid phone number format");
+    }
+
     if (password !== confirmPassword) {
       return setError("Passwords don't match");
     }
@@ -24,7 +43,13 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const result = await register(name, email, password);
+      const result = await register(
+        name,
+        email,
+        password,
+        username,
+        phoneNumber || undefined
+      );
       if (result.success) {
         navigate("/dashboard");
       } else {
@@ -60,6 +85,21 @@ const Register = () => {
           </div>
 
           <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="username">
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              required
+              placeholder="Letters, numbers, and underscores only"
+            />
+          </div>
+
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="email">
               Email
             </label>
@@ -70,6 +110,20 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2" htmlFor="phoneNumber">
+              Phone Number (optional)
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="123-456-7890"
             />
           </div>
 

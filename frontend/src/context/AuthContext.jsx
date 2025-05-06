@@ -37,10 +37,10 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, [token]);
 
-  const login = async (email, password) => {
+  const login = async (login, password) => {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, {
-        email,
+        login,
         password,
       });
       localStorage.setItem("token", res.data.token);
@@ -55,12 +55,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, username, phone_number) => {
     try {
       const res = await axios.post(`${API_URL}/auth/register`, {
         name,
         email,
         password,
+        username,
+        phone_number,
       });
       localStorage.setItem("token", res.data.token);
       setToken(res.data.token);
@@ -70,6 +72,64 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         message: err.response?.data?.message || "Registration failed",
+      };
+    }
+  };
+
+  const updateProfile = async (userData) => {
+    try {
+      const res = await axios.put(`${API_URL}/auth/profile`, userData);
+      setCurrentUser(res.data);
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Profile update failed",
+      };
+    }
+  };
+
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      await axios.put(`${API_URL}/auth/change-password`, {
+        currentPassword,
+        newPassword,
+      });
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Password change failed",
+      };
+    }
+  };
+
+  const requestPasswordReset = async (email) => {
+    try {
+      const res = await axios.post(`${API_URL}/auth/forgot-password`, {
+        email,
+      });
+      return {
+        success: true,
+        message: res.data.message,
+        resetToken: res.data.resetToken, // Note: In a real app, this would be sent by email, not returned directly
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Password reset request failed",
+      };
+    }
+  };
+
+  const resetPassword = async (token, password) => {
+    try {
+      await axios.post(`${API_URL}/auth/reset-password`, { token, password });
+      return { success: true };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Password reset failed",
       };
     }
   };
@@ -86,6 +146,10 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     loading,
+    updateProfile,
+    changePassword,
+    requestPasswordReset,
+    resetPassword,
   };
 
   return (
