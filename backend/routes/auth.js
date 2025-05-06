@@ -127,7 +127,10 @@ router.post("/login", async (req, res) => {
 router.get("/me", authenticateToken, async (req, res) => {
   try {
     const user = await pool.query(
-      "SELECT id, name, email, username, phone_number FROM users WHERE id = $1",
+      `SELECT u.id, u.name, u.email, u.username, u.phone_number, r.name as role 
+       FROM users u
+       JOIN user_roles r ON u.role_id = r.id
+       WHERE u.id = $1`,
       [req.user.id]
     );
 
@@ -300,6 +303,28 @@ router.delete("/account", authenticateToken, async (req, res) => {
     res.json({ message: "Account successfully deleted" });
   } catch (err) {
     console.error("Error deleting account:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get current user's role
+router.get("/me/role", authenticateToken, async (req, res) => {
+  try {
+    const roleQuery = await pool.query(
+      `SELECT r.name as role 
+       FROM users u 
+       JOIN user_roles r ON u.role_id = r.id 
+       WHERE u.id = $1`,
+      [req.user.id]
+    );
+
+    if (roleQuery.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ role: roleQuery.rows[0].role });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });

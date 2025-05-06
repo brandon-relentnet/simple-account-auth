@@ -61,6 +61,42 @@ export const setupDatabase = async () => {
 
     console.log("Linked accounts table setup complete");
 
+    // Create user_roles table if it doesn't exist
+    await pool.query(`
+  CREATE TABLE IF NOT EXISTS user_roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+  )
+`);
+
+    // Insert default roles if they don't exist
+    const roleCheck = await pool.query("SELECT * FROM user_roles");
+    if (roleCheck.rows.length === 0) {
+      await pool.query(`
+    INSERT INTO user_roles (name) VALUES 
+    ('admin'),
+    ('user')
+  `);
+      console.log("Default user roles created");
+    }
+
+    // Add role_id column to users table if it doesn't exist
+    const userRoleColumnCheck = await pool.query(`
+  SELECT column_name 
+  FROM information_schema.columns 
+  WHERE table_name = 'users' AND column_name = 'role_id'
+`);
+
+    if (userRoleColumnCheck.rows.length === 0) {
+      // Add role_id column with default value of 2 (user role)
+      await pool.query(`
+    ALTER TABLE users ADD COLUMN role_id INTEGER REFERENCES user_roles(id) DEFAULT 2
+  `);
+      console.log("Added role_id column to users table");
+    }
+
+    console.log("User roles setup complete");
+
     // Check if we need to add new columns to an existing table
     const columnCheck = await pool.query(`
       SELECT column_name 

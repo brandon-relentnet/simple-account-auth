@@ -26,7 +26,17 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const res = await axios.get(`${API_URL}/auth/me`);
-          setCurrentUser(res.data);
+
+          // Check if user has role information
+          // In a real app, you would update the /me endpoint to include role info
+          try {
+            const roleRes = await axios.get(`${API_URL}/auth/me/role`);
+            // If successful, merge role info with user data
+            setCurrentUser({ ...res.data, role: roleRes.data.role });
+          } catch (roleErr) {
+            // If endpoint doesn't exist yet or fails, just use the basic user data
+            setCurrentUser(res.data);
+          }
 
           // Also load linked accounts
           try {
@@ -46,6 +56,16 @@ export const AuthProvider = ({ children }) => {
 
     loadUser();
   }, [token]);
+
+  // check if a user is an admin
+  const isAdmin = async () => {
+    try {
+      await axios.get("/admin/users");
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
 
   const login = async (login, password) => {
     try {
@@ -261,6 +281,7 @@ export const AuthProvider = ({ children }) => {
     unlinkAccount,
     getLinkedAccountData,
     deleteAccount,
+    isAdmin,
   };
 
   return (
