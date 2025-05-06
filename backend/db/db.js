@@ -43,6 +43,24 @@ export const setupDatabase = async () => {
       )
     `);
 
+    // Create linked_accounts table if it doesn't exist
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS linked_accounts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            provider VARCHAR(50) NOT NULL,
+            provider_user_id VARCHAR(100) NOT NULL,
+            access_token TEXT,
+            refresh_token TEXT,
+            token_expires_at TIMESTAMP WITH TIME ZONE,
+            account_data JSONB,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id, provider)
+        )
+    `);
+
+    console.log("Linked accounts table setup complete");
+
     // Check if we need to add new columns to an existing table
     const columnCheck = await pool.query(`
       SELECT column_name 

@@ -1,3 +1,4 @@
+// frontend/src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 
@@ -8,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
+  const [linkedAccounts, setLinkedAccounts] = useState([]);
 
   // Set axios auth header
   useEffect(() => {
@@ -25,6 +27,14 @@ export const AuthProvider = ({ children }) => {
         try {
           const res = await axios.get(`${API_URL}/auth/me`);
           setCurrentUser(res.data);
+
+          // Also load linked accounts
+          try {
+            const accountsRes = await axios.get(`${API_URL}/linked-accounts`);
+            setLinkedAccounts(accountsRes.data);
+          } catch (accErr) {
+            console.error("Error loading linked accounts:", accErr);
+          }
         } catch (err) {
           console.error("Error loading user:", err);
           localStorage.removeItem("token");
@@ -134,14 +144,87 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const linkAccount = async (provider, userData) => {
+    try {
+      // Initiate linking process
+      await axios.post(`${API_URL}/linked-accounts/connect/${provider}`);
+
+      // Complete linking process with mock callback
+      const res = await axios.post(
+        `${API_URL}/linked-accounts/callback/${provider}`,
+        {
+          code: "mock-auth-code",
+          mockUserData: userData,
+        }
+      );
+
+      // Refresh linked accounts list
+      const accountsRes = await axios.get(`${API_URL}/linked-accounts`);
+      setLinkedAccounts(accountsRes.data);
+
+      return {
+        success: true,
+        message: `Successfully linked ${provider} account`,
+        data: res.data,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message:
+          err.response?.data?.message || `Failed to link ${provider} account`,
+      };
+    }
+  };
+
+  const unlinkAccount = async (accountId) => {
+    try {
+      await axios.delete(`${API_URL}/linked-accounts/${accountId}`);
+
+      // Update the linked accounts state
+      setLinkedAccounts(
+        linkedAccounts.filter((account) => account.id !== accountId)
+      );
+
+      return {
+        success: true,
+        message: "Account unlinked successfully",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to unlink account",
+      };
+    }
+  };
+
+  const getLinkedAccountData = async (provider) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/linked-accounts/data/${provider}`
+      );
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message:
+          err.response?.data?.message || `Failed to get ${provider} data`,
+      };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
     setCurrentUser(null);
+    setLinkedAccounts([]);
   };
 
   const value = {
     currentUser,
+    linkedAccounts,
     login,
     register,
     logout,
@@ -150,6 +233,9 @@ export const AuthProvider = ({ children }) => {
     changePassword,
     requestPasswordReset,
     resetPassword,
+    linkAccount,
+    unlinkAccount,
+    getLinkedAccountData,
   };
 
   return (

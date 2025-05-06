@@ -1,7 +1,9 @@
+// frontend/src/components/Dashboard.jsx
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Profile from "./Profile";
 import ChangePassword from "./ChangePassword";
+import LinkedAccounts from "./LinkedAccounts";
 
 const Dashboard = () => {
   const { currentUser, logout } = useAuth();
@@ -48,12 +50,23 @@ const Dashboard = () => {
             >
               Security
             </button>
+            <button
+              className={`py-2 px-4 mr-2 ${
+                activeTab === "linked-accounts"
+                  ? "bg-white border-t border-l border-r rounded-t text-blue-600"
+                  : "text-gray-600 hover:text-blue-500"
+              }`}
+              onClick={() => setActiveTab("linked-accounts")}
+            >
+              Linked Accounts
+            </button>
           </div>
         </div>
 
         {/* Content */}
         {activeTab === "profile" && <Profile />}
         {activeTab === "security" && <ChangePassword />}
+        {activeTab === "linked-accounts" && <LinkedAccounts />}
       </div>
     </div>
   );
