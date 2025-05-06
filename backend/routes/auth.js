@@ -273,6 +273,37 @@ router.put("/change-password", authenticateToken, async (req, res) => {
   }
 });
 
+// Delete user account
+router.delete("/account", authenticateToken, async (req, res) => {
+  try {
+    const { password } = req.body;
+    const userId = req.user.id;
+
+    // Get user's current password for verification
+    const user = await pool.query("SELECT password FROM users WHERE id = $1", [
+      userId,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify password before allowing deletion
+    const isMatch = await bcrypt.compare(password, user.rows[0].password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Password is incorrect" });
+    }
+
+    // Delete the user (linked accounts will be deleted automatically due to CASCADE)
+    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+
+    res.json({ message: "Account successfully deleted" });
+  } catch (err) {
+    console.error("Error deleting account:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Request password reset
 router.post("/forgot-password", async (req, res) => {
   try {

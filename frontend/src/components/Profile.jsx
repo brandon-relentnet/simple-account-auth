@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import DeleteAccount from "./DeleteAccount";
 
 const Profile = () => {
   const { currentUser, updateProfile } = useAuth();
@@ -12,6 +13,7 @@ const Profile = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteAccountShown, setDeleteAccountShown] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -189,6 +191,24 @@ const Profile = () => {
           </div>
         </div>
       )}
+      <button
+        className="py-2 px-4 mr-2 ml-auto bg-white border rounded text-red-600 cursor-pointer hover:bg-red-100 transition duration-150"
+        onClick={() => setDeleteAccountShown(!deleteAccountShown)}
+      >
+        Delete Account
+      </button>
+      <div
+        className={`
+        ${
+          deleteAccountShown
+            ? "max-h-96 opacity-100 my-4"
+            : "max-h-0 opacity-0 my-0"
+        } 
+        bg-yellow-500 rounded-lg shadow-md transform transition-all duration-300 ease-in-out overflow-hidden
+        `}
+      >
+        <DeleteAccount />
+      </div>
     </div>
   );
 };

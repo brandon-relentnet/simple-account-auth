@@ -86,6 +86,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const deleteAccount = async (password) => {
+    try {
+      await axios.delete(`${API_URL}/auth/account`, {
+        data: { password },
+      });
+
+      // If successful, clear all data and log out
+      localStorage.removeItem("token");
+      setToken(null);
+      setCurrentUser(null);
+      setLinkedAccounts([]);
+
+      return {
+        success: true,
+        message: "Account deleted successfully",
+      };
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data?.message || "Failed to delete account",
+      };
+    }
+  };
+
   const updateProfile = async (userData) => {
     try {
       const res = await axios.put(`${API_URL}/auth/profile`, userData);
@@ -236,6 +260,7 @@ export const AuthProvider = ({ children }) => {
     linkAccount,
     unlinkAccount,
     getLinkedAccountData,
+    deleteAccount,
   };
 
   return (
